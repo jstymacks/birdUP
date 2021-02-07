@@ -12,10 +12,12 @@ def enter_date():
     window.close()
     return values["Input"]
 def enter_info():
-    layout = [[gui.Text("* means that this field is required")], [gui.Text("Input File *"), gui.Input(key="Infile")], [gui.Text("Output File"), gui.Input(key="Ouput")],
-              [gui.Text("File Type"), gui.Input(key="Filetype")], [gui.Text("Output Format"), gui.Input(key="Outputformat")], 
-              [gui.Text("Latitude"), gui.Input(key="Lat")], [gui.Text("Longitude"), gui.Input(key="Long")], [gui.Text("Week"), gui.Input(key="Week")],
-              [gui.Text("Overlap"), gui.Input(key="Overlap")], [gui.Text("SPP"), gui.Input(key="SPP")], [gui.Text("Sensitivity"), gui.Input(key="Sensitivity")], 
+    layout = [[gui.Text("* means that this field is required")], [gui.Text("Input File *", size=(14,1)), gui.Input(key="Infile")], 
+              [gui.Text("Output File", size=(14,1)), gui.Input(key="Ouput")], [gui.Text("File Type", size=(14,1)), gui.Input(key="Filetype")], 
+              [gui.Text("Output Format", size=(14,1)), gui.Input(key="Outputformat")], 
+              [gui.Text("Latitude", size=(14,1)), gui.Input(key="Lat")], [gui.Text("Longitude", size=(14,1)), gui.Input(key="Long")], 
+              [gui.Text("Week", size=(14,1)), gui.Input(key="Week")], [gui.Text("Overlap", size=(14,1)), gui.Input(key="Overlap")], 
+              [gui.Text("SPP", size=(14,1)), gui.Input(key="SPP")], [gui.Text("Sensitivity", size=(14,1)), gui.Input(key="Sensitivity")], 
               [gui.OK()]]
     window = gui.Window("Title", layout)
     while True:
