@@ -12,7 +12,7 @@ def enter_date():
     window.close()
     return values["Input"]
 def enter_info():
-    layout = [[gui.Text("* meant that this field is required")], [gui.Text("Input File *"), gui.Input(key="Infile")], [gui.Text("Output File"), gui.Input(key="Ouput")],
+    layout = [[gui.Text("* means that this field is required")], [gui.Text("Input File *"), gui.Input(key="Infile")], [gui.Text("Output File"), gui.Input(key="Ouput")],
               [gui.Text("File Type"), gui.Input(key="Filetype")], [gui.Text("Output Format"), gui.Input(key="Outputformat")], 
               [gui.Text("Latitude"), gui.Input(key="Lat")], [gui.Text("Longitude"), gui.Input(key="Long")], [gui.Text("Week"), gui.Input(key="Week")],
               [gui.Text("Overlap"), gui.Input(key="Overlap")], [gui.Text("SPP"), gui.Input(key="SPP")], [gui.Text("Sensitivity"), gui.Input(key="Sensitivity")], [gui.Button("OK")]]
