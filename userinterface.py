@@ -81,7 +81,7 @@ def start_command(filename):
         window = gui.Window("Error Window", [[gui.Text("There was an error")]], [gui.Button("OK")])
         while True:
             event, values = window.read()
-            if event == gui.WIN_CLOSED or event == "Continue":
+            if event == gui.WIN_CLOSED or event == "OK":
                 break
         window.close()
         return -1
