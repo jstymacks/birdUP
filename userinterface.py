@@ -3,21 +3,20 @@ import os
 from datetime import date
 #This is a rough draft of the user interface code, I will make some edits later!
 #Please give me feed back especially if some of the text could be worded better
+#To Do: make buttons bigger, Delete languge, power and network settings, Add loopback, Add Documentation, Why are scdeduling and parameters unde seperate buttons,
+#delete output format
 months = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"]
-supported_langs = ["English"]
 window_size = (800, 480)
 class Settings():
     def __init__(self):
         self.lat = 41.9
         self.long = -87.6
-        self.language = "English"
-        self.result_format = "raven"
         self.overlap = 1.0
         self.sensitivity = 1.0
         self.min_conf = 0.1
 device_settings = Settings()
 sg.theme("DarkGreen")
-command_base = "python analyze.py --i {} --results {} --lat {} --lon {} --overlap {} --sensitivity {} --min_conf {}"
+command_base = "python analyze.py --i {} --results raven --lat {} --lon {} --overlap {} --sensitivity {} --min_conf {}"
 def enter_date():
     year_layout = [sg.Text("Year", size = (6,1)), sg.Spin(key = "Year", values = ["2021", "2022", "2023", "2024"])]
     month_layout = [sg.Text("Month", size = (6,1)), sg.Spin(key = "Month", values = months)] 
@@ -29,22 +28,65 @@ def enter_date():
             break
     window.close()
     return values["Year"], values["Month"]
-def enter_lat_long():
-    layout = [  [sg.Text("Latitude: from 90°S to 90°N")],
-                [sg.Slider(key = "Lat", range = (-90,90, 0.1),  default_value = device_settings.lat, size=(20,15), orientation='horizontal', font=("Helvetica", 12))],
-                [sg.Text("Longitude: from 180°W to 180°E")],
-                [sg.Slider(key = "Long", range = (-180, 180, 0.1), default_value = device_settings.long, size=(20,15), orientation='horizontal', font=("Helvetica", 12))],
-                [sg.OK()]  ]
-    window = sg.Window("Enter the Latitude and Longitude", layout, size = window_size)
+def enter_lat():
+    button_size = (10, 3)
+    lat_string = ""
+    layout = [ [sg.InputText("Latitude: ", font=("Helvetica", 24), key = "Lat")],
+               [sg.Button("7", key = "7", size = button_size), sg.Button("8", key = "8", size = button_size), sg.Button("9", key = "9", size = button_size)],
+               [sg.Button("4", key = "4", size = button_size), sg.Button("5", key = "5", size = button_size), sg.Button("6", key = "6", size = button_size)],
+               [sg.Button("1", key = "1", size = button_size), sg.Button("2", key = "2", size = button_size), sg.Button("3", key = "3", size = button_size)],
+               [sg.Button(".", key = ".", size = button_size), sg.Button("0", key = "0", size = button_size), sg.Button("<-", key = "Back", size = button_size)],
+               [sg.Radio("North", "HEMISPHERE", size = (10, 1), default = True), sg.Radio("South", "HEMISPHERE", size = (10, 1), default = False, key = "-SOUTH-")],
+               [sg.OK()]    ]
+    window = sg.Window("Enter the Latitude", layout, size = window_size)
     while True:
         event, values = window.read()
-        if event == sg.WIN_CLOSED or event == "OK":
-            window.close()
-            break
-    if values != None:
-        device_settings.lat = values["Lat"]
-        device_settings.long = values["Long"]
-        return None
+        if event == "OK":
+            lat_val = float(lat_string)
+            if lat_val > 90:
+                sg.popup("Error!", "The latitude cannot be greater than 90°")
+                lat_string = ""
+            else:
+                break
+        elif event != "Back":
+            lat_string += str(event)
+        if event == "Back":
+            lat_string = lat_string[:-1]
+        window["Lat"].update("Latitude: {}".format(lat_string))
+    window.close()
+    if values["-SOUTH-"] == True:
+        lat_val = lat_val * -1
+    device_settings.lat = lat_val
+def enter_lon():
+    button_size = (10, 3)
+    lon_string = ""
+    layout = [  [sg.InputText("Longitude: ", font=("Helvetica", 24), key = "Lon")],
+                [sg.Button("7", key = "7", size = button_size), sg.Button("8", key = "8", size = button_size), sg.Button("9", key = "9", size = button_size)],
+                [sg.Button("4", key = "4", size = button_size), sg.Button("5", key = "5", size = button_size), sg.Button("6", key = "6", size = button_size)],
+                [sg.Button("1", key = "1", size = button_size), sg.Button("2", key = "2", size = button_size), sg.Button("3", key = "3", size = button_size)],
+                [sg.Button(".", key = ".", size = button_size), sg.Button("0", key = "0", size = button_size), sg.Button("<-", key = "Back", size = button_size)],
+                [sg.Radio("East", "HEMISPHERE", size = (10, 1), default = True), sg.Radio("West", "HEMISPHERE", size = (10, 1), default = False, key = "-WEST-")],
+                [sg.OK()]    ]
+    window = sg.Window("Enter the Longitude", layout, size = window_size)
+    while True:
+        event, values = window.read()
+        if event == "OK":
+            lon_val = float(lon_string)
+            if lon_val > 180:
+                sg.popup("Error!", "The longitude cannot be greater than 180°")
+                lon_string = ""
+            else:
+                break
+        elif event != "Back":
+            lon_string += str(event)
+        if event == "Back":
+            lon_string = lat_string[:-1]
+        window["Lon"].update("Latitude: {}".format(lon_string))
+    window.close()
+    #To do implement python version of goto statement for this function 
+    if values["-WEST-"] == True:
+        lon_val = lon_val * -1
+    device_settings.long = lon_val
 def enter_parameters():
     layout = [  [sg.Text("Overlap")],
                 [sg.Slider(key = "Overlap", range = (0, 29), default_value = (device_settings.overlap * 10), size=(20,15), orientation='horizontal', font=("Helvetica", 12))],
@@ -63,68 +105,26 @@ def enter_parameters():
         device_settings.overlap = values["Overlap"]/10
         device_settings.sensitivity = values["Sensitivity"]/100
         device_settings.min_conf = values["Min_Conf"]/100
-def output_format():
-    layout = [   [sg.Spin(key="Format", values = ["raven", "audacity"])], [sg.OK()]]
-    while True:
-        event, values = window.read()
-        if event == sg.WIN_CLOSED or event == "OK":
-            window.close()
-            break
-    device_settings.result_format = values["Format"]
 def settings_menu():
     button_size = (12, 1)
-    layout = [  [sg.Button("Location", size = button_size), sg.Button("Scheduling", size = button_size)], [sg.Button("Parameters", size = button_size), sg.Button("Output", size = button_size)],
-                [sg.Button("Language", size = button_size), sg.Button("Network", size = button_size)], [sg.Button("Power", size = button_size), sg.Button("Back", size = button_size)]  ]
+    layout = [  [sg.Button("Location", size = button_size)],
+                [sg.Button("Scheduling", size = button_size)],
+                [sg.Button("Parameters", size = button_size)],
+                [sg.Button("Back", size = button_size)]  ]
     window = sg.Window("Settings", layout, size = window_size)
     while True:
         event, values = window.read()
         if event == sg.WIN_CLOSED or event == "Back":
             break
         if event == "Location":
-            enter_lat_long()
+            enter_lat()
+            enter_lon()
         if event == "Parameters":
             enter_parameters()
-        if event == "Output":
-            output_format()
     window.close()
     return values
-layout_dictionary["location"] = enter_lat_long
-layout_dictionary["parameters"] = enter_parameters
-def enter_info():
-    layout = [[sg.Text("* means that this field is required")], [sg.Text("Input File *", size=(14,1)), sg.Input(key="Infile")], 
-              [sg.Text("Output File", size=(14,1)), sg.Input(key="Ouput")], [sg.Text("File Type", size=(14,1)), sg.Input(key="Filetype")], 
-              [sg.Text("Output Format", size=(14,1)), sg.Input(key="Outputformat")], 
-              [sg.Text("Week", size=(14,1)), sg.Input(key="Week")],
-              [sg.Text("SPP", size=(14,1)), sg.Input(key="SPP")],  
-              [sg.OK()]]
-    window = sg.Window("Title", layout)
-    while True:
-        event, values = window.read()
-        if event == sg.WIN_CLOSED or event == "OK":
-            break
-    window.close()
-    if values["Infile"] == None:
-        window2 = sg.Window("Error Message", [[sg.Text("You need to specify which file or directory to analyse")]], [[sg.OK()]])
-        #To do: Return to the beginning of this function
-        #To do: Check if the input file is valid
-    #This builds the command line argument piece by piece
-    range_error = "{} should be a {} between {} and {}"
-    command = "python analyze.py --i {} ".format(values["Infile"])
-    if values["Week"]:
-        temp2 = int(values["Week"])
-        if temp2 < 1 or temp2 > 48:
-            window2 =  sg.Window("Error Message", [[sg.Text(range_error.format("Week", "Integer", 1, 48))]], [[sg.OK()]])
-            #To do: Return to the beginning of this function or special function to handel error
-        else:
-            command += "--week {} ".format(temp2)
-    return command
-#print(enter_date())
-#print(date.today())
-#enter_lat_long()
-#layout_dictionary["location"]()
-#enter_parameters()
 def run_command(filename):
-    cmd = command_base.format(filename, device_settings.result_format, device_settings.lat, device_settings.long, device_settings.overlap, device_settings.sensitivity, device_settings.min_conf)
+    cmd = command_base.format(filename, device_settings.lat, device_settings.long, device_settings.overlap, device_settings.sensitivity, device_settings.min_conf)
     print(cmd)
     failure = os.system(cmd)
     if failure:
@@ -143,19 +143,22 @@ def run_command(filename):
                 break
         window.close()
         return 0
+def run_analysis():
+    filename = None
+    while filename == None:
+        filename = sg.popup_get_file("Select file")
+    run_command(filename)
 def main():
-    layout = [  [sg.Button("Start", size = (12, 1))], [sg.Button("Settings", size = (12, 1))], [sg.Button("Documentation", size = (12, 1))]]
+    layout = [  [sg.Button("Start", size = (12, 1))], [sg.Button("Settings", size = (12, 1))], [sg.Button("Documentation", size = (12, 1))], [sg.Button("Analyze Data", size = (12, 1))]]
     window = sg.Window("Opening Screen", layout, size = window_size)
+    #print("mkdir birdup")
     while True:
         event, values = window.read()
         if event == sg.WIN_CLOSED:
             break
         if event == "Settings":
             settings_menu()
-        if event == "Start":
-            break
-    filename = input("Enter the Filename")    
-    run_command(filename)
+        if event == "Analyze Data":
+            run_analysis()
 if __name__ == "__main__":
     main()
-
