@@ -1,12 +1,18 @@
 import pyaudio
 import wave
+import sys
 
 chunk = 1024  # Record in chunks of 1024 samples
 sample_format = pyaudio.paInt16  # 16 bits per sample
 channels = 2
 fs = 44100  # Record at 44100 samples per second
-seconds = 3
-filename = "output.wav"
+#16 bits at 44100 Hz, with 2 channels is also the same format CD's use
+#seconds = 3
+#filename = "output.wav"
+
+#these are arguments from the command line
+seconds = int(sys.args[1])
+filename = sys.args[2]
 
 p = pyaudio.PyAudio()  # Create an interface to PortAudio
 
@@ -40,3 +46,4 @@ wf.setsampwidth(p.get_sample_size(sample_format))
 wf.setframerate(fs)
 wf.writeframes(b''.join(frames))
 wf.close()
+
