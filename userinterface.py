@@ -3,8 +3,8 @@ import os
 import datetime as dt
 #This is a rough draft of the user interface code, I will make some edits later!
 #Please give me feed back especially if some of the text could be worded better
-#To Do: make buttons bigger, Delete languge, power and network settings, Add loopback, Add Documentation, Why are scdeduling and parameters unde seperate buttons,
-#delete output format
+#To Do: make buttons bigger, Add loopback, Add Documentation, Why are scdeduling and parameters unde seperate buttons,
+#To Do: Find ways to deleted recordings to free up memory
 months = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"]
 window_size = (800, 480)
 class Settings():
@@ -130,12 +130,19 @@ def scheduling():
     today = dt.date.today()
     #month_list = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"]
     weekday_list = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"]
+    #Repeat has alignment issues needs to be fixed
     layout = [  [sg.Text("Repeats", size = (8, 1)),
                  sg.Radio("Once", "-PERIOD-", enable_events = True, size = (6, 1), default = True, key = "-O-"),
                  sg.Radio("Daily", "-PERIOD-", enable_events = True, size = (6, 1), key = "-D-"),
                  sg.Radio("Weekly", "-PERIOD-", enable_events = True, size = (7, 1), key = "-W-"),
-                 sg.Radio("Monthly", "-PERIOD-", enable_events = True, size = (8, 1), key = "-M-"),
-                 sg.Radio("Yearly", "-PERIOD-", enable_events = True, size = (7, 1), key = "-Y-")],
+                 sg.Radio("Monthly", "-PERIOD-", enable_events = True, size = (8, 1), key = "-M-")],
+                 #sg.Radio("Yearly", "-PERIOD-", enable_events = True, size = (7, 1), key = "-Y-")],
+                [sg.Text("Record for", size = (8, 1))],
+                [sg.Text("Seconds", size = (8, 1)), sg.Spin(values = [*range(0, 60)], key = "-RSEC-")],
+                [sg.Text("Minutes", size = (8, 1)), sg.Spin(values = [*range(0, 30)], key = "-RMIN-")],
+                [sg.Text("When to record")],
+                 #To do Filename for the recording
+                 #To do How to make sure SD card has enough space for new recording?
                 [sg.Text("Minute", size = (8, 1)), sg.Spin(values = [*range(0, 60)], size = (3, 1), key = "-MIN-", initial_value = 0)],
                 [sg.Text("Hour", size = (8, 1)), sg.Spin(values = [*range(0, 24)], size = (3, 1), key = "-HOUR-", initial_value = 0)],
                 [sg.Text("Day", size = (8, 1)), sg.Spin(values = [*range(1, 32)], size = (3, 1), key = "-DAY-", initial_value = today.day)],
@@ -191,11 +198,11 @@ def scheduling():
     } '''
     while True:
         event, values = window.read()
-        if event == sg.WIN_CLOSED or event == "OK":
+        if event == "OK":
             window.close()
             break
         print(event)
-        if event == "-BACK-":
+        if event == sg.WIN_CLOSED or event == "-BACK-":
             window.close()
             return
         #This is ugly and should be restructured
@@ -223,12 +230,12 @@ def scheduling():
             window["-MON-"].update(visible = False)
             window["-U-"].update(visible = True)
             window["-I-"].update(visible = True)
-        elif event == "-Y-": 
+    '''    elif event == "-Y-": 
             window["-DAY-"].update(visible = True)
             window["-WEEKDAY-"].update(visible = False)
             window["-MON-"].update(visible = True)
             window["-U-"].update(visible = True)
-            window["-I-"].update(visible = True)
+            window["-I-"].update(visible = True) '''
     (m, h, d, mo) = (values["-MIN-"], values["-HOUR-"], values["-DAY-"], values["-MON-"])
     record_time = dt.datetime(today.year, mo, d, hour = h, minute = m)
     print(record_time)
@@ -243,24 +250,24 @@ def scheduling():
             if y2 > today.year:
                 cron_command = "{:02d} {:02d} * * * ".format(m, d) #Edit later
             elif y2 < today.year:
-                sg.popup("Error: Invalid Interval") #goto statement
+                sg.popup("Error: Invalid Interval") #goto statement equivalent needed
             else:
                 mo2 = values["-MON2-"]
                 if mo2 > mo:
                     cron_command = "{:02d} {:02d} * {:02d}-{:02d} * ".format(m, h, mo, mo2) #edit later #split into 2 commands
                 elif mo2 < mo:
-                    sg.popup("Error: Invalid Interval") #goto statement
+                    sg.popup("Error: Invalid Interval") #goto statement equivalent needed
                 else:
                     d2 = values["-DAY2-"]
                     if d2 > d:
                         cron_command = "{:02d} {:02d} {0:2d}-{0:2d} {0:2d} * ".format(m, h, d, d2, m) #edit later
                     elif d2 < d:
-                        sg.popup("Error: Invalid Interval") #goto statement
+                        sg.popup("Error: Invalid Interval") #goto statement equivalent needed
                     else:
                         cron_command = "{:02d} {:02d} {:02d} {:02d} * ".format(m, h, d, mo)
     elif values["-W-"] == True:
         w = values["-WEEKDAY-"]
-        cron_command = "{:02d} {:02d} * * {} ".format(m, d, w) 
+        cron_command = "{:02d} {:02d} * * {} ".format(m, h, w) 
     elif values["-M-"] == True:
         cron_command = "{:02d} {:02d} {:02d} * * ".format(m, h, d)
     cron_command += "python record.py"
@@ -285,6 +292,7 @@ def settings_menu():
             scheduling()
     window.close()
     return values
+#def show_documentation():    
 def run_command(filename):
     cmd = command_base.format(filename, device_settings.lat, device_settings.long, device_settings.overlap, device_settings.sensitivity, device_settings.min_conf)
     print(cmd)
